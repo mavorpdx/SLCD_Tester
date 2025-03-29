@@ -1,0 +1,58 @@
+SLCD Device Configuration Documentation
+The "dev_SLCD5.json" file serves as a template for configuring SLCD devices. It contains several key sections that define various aspects of the device's functionality.
+
+
+Device Information
+--------------------------------------------------------
+name: Identifies the specific model (e.g., "SLCD_N1_5e")
+part_number: Unique identifier for the hardware (e.g., "1111111")
+display_type: Physical size/type of the display (e.g., "7/"")
+
+Serial Port Configuration
+--------------------------------------------------------
+Controls up to 4 serial ports (SER0-SER3) with the following parameters:
+
+SERx_RS232_EN: Boolean enabling/disabling RS232 mode for each port
+SERx_BAUD_RATE: Integer specifying communication speed (bits per second)
+
+RS232 Controls
+--------------------------------------------------------
+Configuration for RS232 serial interface control lines:
+
+RS232_5_OEN: Output Enable control (boolean)
+RS232_5_RTS: Request To Send signal control (boolean)
+
+RS485 Controls
+--------------------------------------------------------
+Configuration for RS485 serial interface control lines:
+
+RS485_4_DE: Driver Enable control (boolean)
+RS485_4_REN: Receiver Enable control (boolean)
+
+Reset Controls
+--------------------------------------------------------
+Control signals for resetting components:
+
+COM2_RSTn: Reset signal for COM2 interface (boolean)
+
+Power Controls
+--------------------------------------------------------
+Various power-related control signals:
+
+5V_VMAIN_PG: 5V Main Power Good indicator (boolean)
+VIN_INV_EN: Input Voltage Inverter Enable (boolean)
+VIN_MAIN_EN: Input Voltage Main Enable (boolean)
+V5_INV_EN: 5V Inverter Enable (boolean)
+V5_MAIN_EN: 5V Main Enable (boolean)
+
+Display Controls
+--------------------------------------------------------
+Controls specific to the LCD display operation:
+
+BLON: Backlight On control (boolean)
+BRITE: Brightness control (boolean)
+ERG_PWM: PWM control for the electroluminescent panel (boolean)
+PWM_EXT: External PWM control (boolean)
+
+
+Each section contains boolean flags that enable or disable specific hardware functions, allowing for fine-grained configuration of the device's capabilities.

@@ -1,0 +1,6 @@
+# STM32CubeIDE specific files
+.metadata
+.settings
+.launch
+[Rr]elease
+[Dd]ebug

@@ -1,0 +1,41 @@
+{
+  "device_info": {
+    "name": "SLCD_N1_5e",
+    "part_number": "1111111",
+    "display_type": "7in"
+  },
+  "serial_ports": {
+    "SER0_RS232_EN": true,
+    "SER0_BAUD_RATE": 115200,
+    "SER1_RS232_EN": false,
+    "SER1_BAUD_RATE": 115200,
+    "SER2_RS232_EN": false,
+    "SER2_BAUD_RATE": 115200,
+    "SER3_RS232_EN": false,
+    "SER3_BAUD_RATE": 921600
+  },
+  "rs232_controls": {
+    "RS232_5_OEN": false,
+    "RS232_5_RTS": false
+  },
+  "rs485_controls": {
+    "RS485_4_DE": false,
+    "RS485_4_REN": false
+  },
+  "reset_controls": {
+    "COM2_RSTn": false
+  },
+  "power_controls": {
+    "5V_VMAIN_PG": true,
+    "VIN_INV_EN": true,
+    "VIN_MAIN_EN": true,
+    "V5_INV_EN": true,
+    "V5_MAIN_EN": true
+  },
+  "display_controls": {
+    "BLON": false,
+    "BRITE": false,
+    "ERG_PWM": false,
+    "PWM_EXT": false
+  }
+}

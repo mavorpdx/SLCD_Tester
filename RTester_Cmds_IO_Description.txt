@@ -1,0 +1,171 @@
+RTester board Commands and I/O
+
+Version Information:
+VERS - Display version information
+
+LED Control:
+LED1 ON/LED1 1 - Turn LED1 on
+LED1 OFF/LED1 0 - Turn LED1 off
+LED2 ON/LED2 1 - Turn LED2 on
+LED2 OFF/LED2 0 - Turn LED2 off
+
+ADC Commands:
+ADC_RAW - Print raw ADC values
+ADC_INVERTER - Get calculated inverter value
+ADC_VOLT3V3 - Get calculated 3.3V value
+ADC_VOLT5V - Get calculated 5V value
+ADC_INVJ2 - Get calculated inverter J2 value
+ADC_MAIN - Get calculated main J2 value
+ADC - Print all calculated ADC values
+
+GPIO Commands:
+GPIO_ALL - Print all GPIO states
+TOGGLE <pin_name> - Toggle specified GPIO pin
+SET <pin_name> - Set specified GPIO pin high
+CLR <pin_name> - Clear specified GPIO pin (set low)
+READ <port> - Read SER1_INVALIDn_PIN (port=1) or SER2_INVALIDn_PIN (port=2)
+
+UART Commands:
+COM0 <data> - Send data to COM0
+COM1 <data> - Send data to COM1
+COM485 <data> - Send data to COM485
+COM2 <data> - Send data to COM2
+BAUD0 <rate> - Set/display COM0 baud rate
+BAUD1 <rate> - Set/display COM1 baud rate
+BAUD2 <rate> - Set/display COM2 baud rate
+BAUD485 <rate> - Set/display COM485 baud rate
+RS485 <data> - Send data via RS485
+SERCFG <num> - Set/display serial configuration
+
+System Commands:
+HELP - Print available commands
+STATUS - Print system status information
+
+
+********************************************
+ INPUTS
+********************************************
+--------------------------------------------
+Power Monitoring Inputs
+--------------------------------------------
+VIN_VINV_IMON (PA0) - Inverter input current monitor
+VIN_VMAIN_IMON (PA1) - Main input current monitor
+V5_VINV_IMON (PA4) - 5V inverter current monitor
+V5_VMAIN_IMON (PC1) - 5V main current monitor
+VIN_VINV_PG (PA11) - Inverter input power good
+VIN_VMAIN_PG (PB13) - Main input power good
+V5_VINV_PG (PB14) - 5V inverter power good
+V5_VMAIN_PG (PA12) - 5V main power good
+
+--------------------------------------------
+Serial Status Inputs
+--------------------------------------------
+SER1_INVALIDn (PC9) - Serial port 1 invalid status (active low)
+SER2_INVALIDn (PC13) - Serial port 2 invalid status (active low)
+
+--------------------------------------------
+Other Inputs
+--------------------------------------------
+ (PB15) - I2C GPIO interrupt (active low)
+P104 (PD2) - General purpose input/output pin
+
+********************************************
+ OUTPUTS
+********************************************
+--------------------------------------------
+LED Control
+--------------------------------------------
+LED1 (PB1) - LED 1 control
+LED2 (PB5) - LED 2 control
+
+--------------------------------------------
+Serial Interface Controls
+--------------------------------------------
+SER1_RS232_EN (PA5) - Serial port 1 RS-232 enable
+SER2_RS232_EN (PC12) - Serial port 2 RS-232 enable
+RS232_5_OEN (PC0) - UART5 output enable (active low)
+RS232_5_RTS (PC6) - UART request to send
+RS485_4_DE (PC7) - RS-485 driver enable
+RS485_4_REN (PC8) - RS-485 receiver enable (active low)
+
+--------------------------------------------
+PCA9534 GPIO Expander Pins (I2C Controlled)
+--------------------------------------------
+BLON - Backlight on control
+BRITE - Brightness control
+ERG_PWM - Ergonomics PWM
+PWM_EXT - External PWM
+Vin_Vinv_EN - Input inverter voltage enable
+Vin_Main_EN - Input main voltage enable
+V5_Vinv_EN - 5V inverter voltage enable
+V5_VMain_EN - 5V main voltage enable
+
+--------------------------------------------
+Reset Controls
+--------------------------------------------
+J7_RST (PA8) - J7 reset control
+COM2_RSTn (PA10) - COM2/J4 reset control (active low)
+
+--------------------------------------------
+General Purpose Output
+--------------------------------------------
+P105 (PA15) - General purpose output
+
+********************************************
+ SPECIAL FUNCTION PINS
+********************************************
+--------------------------------------------
+UART Communication
+--------------------------------------------
+USART_TX (PA2) - UART transmit (main interface - USB)
+USART_RX (PA3) - UART receive (main interface - USB)
+UART1_TX (PB6) - COM0
+UART1_RX (PB7) - COM0
+UART3_TX (PC4) - COM1
+UART3_RX (PC5) - COM1
+UART4_TX (PC10) - COM485
+UART4_RX (PC11) - COM485
+UART5_TX (PB3) - COM2
+UART5_RX (PB4) - COM2
+
+--------------------------------------------
+ADC Pins
+--------------------------------------------
+ADC_V_INV_REG12V (PA6) - ADC for inverter 12V regulated voltage
+ADC_3V3_PERI (PA7) - ADC for 3.3V peripheral voltage
+ADC_5V_AUDIO (PB0) - ADC for 5V audio voltage
+ADC_V_INV (PC2) - ADC for inverter voltage
+ADC_V_MAIN (PC3) - ADC for main voltage
+
+--------------------------------------------
+Debug Interface
+--------------------------------------------
+TMS (PA13) - JTAG Test Mode Select
+TCK (PA14) - JTAG Test Clock
+
+********************************************
+ SERIAL CONFIGURATION FOR USART3 AND USART4
+********************************************
+RS-232 Mode (serialCFG = 0)
+--------------------------------------------
+RS232_5_OEN = 1 (TTL disabled)
+SER2_RS232_EN = 1 (RS-232 enabled)
+RS485_4_DE = 0 (RS-485 driver disabled)
+RS485_4_REN = 1 (RS-485 receiver disabled)
+
+
+RS-485 Mode (serialCFG = 1)
+--------------------------------------------
+RS232_5_OEN = 1 (TTL disabled)
+SER2_RS232_EN = 1 (RS-232 enabled)
+RS485_4_DE = 0 (RS-485 driver disabled)
+RS485_4_REN = 0 (RS-485 receiver enabled)
+
+
+TTL Mode (serialCFG = 2)
+--------------------------------------------
+RS232_5_OEN = 0 (TTL enabled)
+SER2_RS232_EN = 0 (RS-232 disabled)
+RS485_4_DE = 0 (RS-485 driver disabled)
+RS485_4_REN = 1 (RS-485 receiver disabled)
+
