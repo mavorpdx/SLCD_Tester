@@ -1,4 +1,3 @@
-python ../SLCD_tester.py -c configACM0 -i identityG1+5e -l -lf outUSB -v2 test.master -dc dev_SLCD5.json
+python SLCD_tester.py -c config -i ..\g1-plus-tester\test5\identitySLCD5+e -l -lf out -v2 ..\g1-plus-tester\test5\commands.master -dc dev_SLCD5.json
 
-python ../SLCD_tester.py -c configACM0 -i identityG1+5e -l -lf outUSB -v2 main5.master -dc dev_SLCD5.json
-
+python SLCD_tester.py -c config -i ..\g1-plus-tester\test5\identitySLCD5+e -l -lf out -v2 ..\g1-plus-tester\test5\main5.master -dc dev_SLCD5.json

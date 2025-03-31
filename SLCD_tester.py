@@ -86,6 +86,7 @@ def load_device_config(config_file):
     Output:
     - dict or None: Device configuration data if successful, None otherwise
     """
+
     print_comment(f"**************************************************")
     print_comment(f"Loading device configuration file: {config_file}")
     
@@ -133,10 +134,11 @@ def apply_device_config(ser, device_config):
         return False
     
     try:
-        print_comment("Applying device configuration...")
+        print_debug("Applying device configuration...")
         
         # Process all sections except device_info
         for section_name, section_data in device_config.items():
+
             # Skip device_info section
             if section_name == "device_info":
                 continue
@@ -144,35 +146,30 @@ def apply_device_config(ser, device_config):
             print_info(f"Configuring {section_name}...")
             
             for key, value in section_data.items():
-                # Special handling for baud rates
-                if key.endswith("_BAUD_RATE"):
-                    command = f"set {key} {value}"
-                    print_debug(f"Setting {key}: sending command '{command}'")
-                    send_serial_string(ser, command)
-                    time.sleep(sleep5)
-                elif isinstance(value, bool):
+                #print_debug(f"Processing key: {key}, value: {value}, type: {type(value)}")
+                if isinstance(value, bool):
                     if value:
                         command = f"set {key}"
                     else:
                         command = f"clr {key}"
-                    print_debug(f"Configuring {key}: sending command '{command}'")
+                    #print_debug(f"Sending command '{command}'")
                     send_serial_string(ser, command)
-                    time.sleep(sleep5)
-        
-        print_success("Device configuration applied successfully!")
+                    read_serial_with_packet_processing(ser, 1.0)
+
+                else:
+                    # Handle other types of settings
+                    command = f"{key} {value}"
+                    #print_debug(f"Setting {key}: sending command '{command}'")
+                    send_serial_string(ser, command)
+                    read_serial_with_packet_processing(ser, 1.0)
+
+        print_debug("Device configuration applied successfully!")
         return True
     
     except Exception as e:
         print_error(f"Error applying device configuration: {str(e)}")
         print_error(traceback.format_exc())
         return False
-
-def print_success(message):
-    """Print success messages with green color"""
-    formatted_message = f"{Fore.GREEN}{message}{Fore.RESET}{bg.RESET}" if color_enabled else message
-    print_debug(formatted_message)
-    if logging_enabled:
-        logging.info(strip_color_codes(message))
 
 def process_device_config(config_file):
     """
@@ -202,13 +199,15 @@ def process_device_config(config_file):
         # Save settings to device if needed
         if success and args.save_config:
             print_debug("Saving configuration to device memory...")
-            send_serial_string(ser, "save")
+            send_serial_string(ser, "SAVE")
             time.sleep(1)  # Wait for save operation to complete
-            print_success("Configuration saved to device memory.")
+            print_debug("Configuration saved to device memory.")
         
         return success
     
     finally:
+        send_serial_string(ser, "VERS")
+        read_serial_with_packet_processing(ser, 1.0)
         close_serial_port(ser)
 
 
@@ -217,7 +216,6 @@ def extract_response_value(received_data):
     print_debug(f"DEBUG EXTRACT - Raw received: '{received_data}'")
     
     # Look for command packets with a value
-    #@@@@ command_matches = re.findall(r'\{"COM\d+":"([^"]*)"\}', received_data)
     command_matches = re.findall(r'\{"COM\d+":\s*"([^"]*)"\}', received_data)
 
     print_debug(f"DEBUG EXTRACT - Matches found: {command_matches}")
@@ -238,32 +236,28 @@ def extract_response_value(received_data):
 # **********************************************************************************************
 def process_packet(packet):
     """Process a packet from the serial port."""
-    print_debug(f"DEBUG PROCESS - Received packet: '{packet}', length: {len(packet)}")
+    
+    #print_debug(f"Received packet: '{packet}', length: {len(packet)}")
 
     if not packet or len(packet) < 2:
-        #print_debug("DEBUG PROCESS - Packet too short or empty")
         return None, None
         
     if packet[0] == '[' and packet[-1] == ']':
-        # Debug packet processing
         debug_message = packet[1:-1].strip()
         print_debug(f"DEBUG '{debug_message}'")
-        # Rest of debug packet processing...
         
     elif packet[0] == '{' and packet[-1] == '}':
         # Command packet processing
         content = packet[1:-1].strip()
-        #print_debug(f"DEBUG PROCESS - Command packet content: '{content}'")
         
         if " : " in content:
             parts = content.split(" : ", 1)
             if len(parts) == 2:
                 port, result = parts[0].strip('"'), parts[1].strip('"')
-                print_debug(f"DEBUG Parsed - Port: '{port}', Result: '{result}'")
+                #print_debug(f"DEBUG Parsed - Port: '{port}', Result: '{result}'")
                 command_results.append((port, result))
                 return False, result
         
-        print_debug(f"DEBUG PROCESS - Invalid command packet format: '{packet}'")
         return False, content
             
     return None, None
@@ -297,10 +291,21 @@ def read_serial_with_packet_processing(ser, timeout=1.0):
                 if square_bracket_packets:
                     print_debug(f"DEBUG Found square brackets: {square_bracket_packets}")
                     
+                    # Process each square bracket packet
+                    for packet in square_bracket_packets:
+                        # Process the packet
+                        is_debug, result = process_packet(packet)
+                        # Remove the processed packet from pending_packet
+                        pending_packet = pending_packet.replace(packet, '', 1)
+                        
+                        if is_debug is not None:
+                            packet_results.append(('debug', result))
+                    
+                    continue  # Check for more packets after processing
+                
                 # Check for curly bracket packets
                 curly_bracket_packets = re.findall(r'\{.*?\}', pending_packet)
                 if curly_bracket_packets:
-                    print_debug(f"DEBUG Found curly brackets: {curly_bracket_packets}")
                     for packet in curly_bracket_packets:
                         print_debug(f"RSP: {packet}")
                         is_debug, result = process_packet(packet)
@@ -310,6 +315,13 @@ def read_serial_with_packet_processing(ser, timeout=1.0):
                             packet_results.append(('command', result))
                     continue  # Check for more packets after processing
                 
+                # Clean up any remaining whitespace or control characters
+                if pending_packet.strip() == "":
+                    pending_packet = ""  # If only whitespace remains, clear it entirely
+                
+                # Clean up any CR/LF characters
+                pending_packet = re.sub(r'^[\r\n\s]+', '', pending_packet)  # Remove leading whitespace/CR/LF
+
                 # If we get here, no more packets were processed
                 processed_all = True
         
@@ -509,8 +521,8 @@ def print_always(message, end='\n'):
     else:
         print(message, end=end)
 
-    #if logging_enabled and not message.startswith('["') and not message.startswith('{"'):
-    #    logging.info(strip_color_codes(message))
+    if logging_enabled and not message.startswith('["') and not message.startswith('{"'):
+        logging.info(strip_color_codes(message))
 
 
 # **********************************************************************************************
@@ -619,16 +631,16 @@ else:
 # **********************************************************************************************
 def load_config(config_file='config.json'):
 
-    print_comment(f"**************************************************")
-    print_comment(f"Loading config file: {config_file}")
+    print_debug(f"**************************************************")
+    print_debug(f"Loading config file: {config_file}")
     if not config_file.endswith('.json'):
         config_file += '.json'
     try:
         with open(config_file, 'r') as f:
             config = json.load(f)
-            print_comment(f"Config file {config_file} loaded successfully")
-            print_comment(f"Using serial port: {config.get('serial_port', 'Not specified')}")
-            print_comment(f"Using baudrate: {config.get('baudrate', 'Not specified')}")
+            print_debug(f"Config file {config_file} loaded successfully")
+            print_debug(f"Using serial port: {config.get('serial_port', 'Not specified')}")
+            print_debug(f"Using baudrate: {config.get('baudrate', 'Not specified')}")
         return config
     except FileNotFoundError:
         print_error(f"Config file {config_file} not found. Using default settings.")
@@ -729,7 +741,7 @@ def print_identity_data(identity):
     ]
     
     for line in device_info:
-        print_comment(line)
+        print_debug(line)
 
 
 
@@ -777,6 +789,7 @@ def close_serial_port(ser):
 # **********************************************************************************************
 def send_serial_string(ser, data):
     if ser is not None:
+        print_debug(f"SER - {data}")
         try:
             for char in data:
                 ser.write(char.encode())
@@ -960,6 +973,7 @@ def send_command_wait_for_cursor(ser, command, timeout=2.0):
         if ser.in_waiting > 0:
             chunk = ser.read(ser.in_waiting).decode('ascii', errors='replace')
             response += chunk
+            #print_debug(f"Raw received: '{chunk}'")
             
             # Check for cursor characters
             if '>' in chunk:
@@ -1088,7 +1102,7 @@ def parse_test_procedures(json_data, ser):
                                     chunk = ser.read(ser.in_waiting).decode('ascii', errors='replace')
                                     response += chunk
                                     
-                                    print_info(f"Response: {response}")
+                                    print_debug(f"Response: {response}")
                                     if logging_enabled:
                                         logging.info(f"Response: {strip_color_codes(response)}")
 
@@ -1643,9 +1657,9 @@ def process_tests(json_files):
             if exit_program:
                 break
 
-            if verbose > 0:
-                print_comment("=" * TEST_COLUMN_WIDTH)
-                print_comment(f"File: {json_file_path}")
+#            if verbose > 0:
+            print_comment("=" * TEST_COLUMN_WIDTH)
+            print_comment(f"File: {json_file_path}")
             
             try:
                 json_data = load_json_file(json_file_path)
@@ -1659,18 +1673,14 @@ def process_tests(json_files):
                 if file_passed:
                     pass_count += 1
                     print_debug(f"Pass count increased to {pass_count}")
-                    if verbose > 0:
-                        print_comment(f"PASSED -- File {json_file_path}")
-                    else:
-                        print_info(f"{test_name:<{TEST_NAME_WIDTH}} | {version:3} |  P   |      | {master_version}")
+                    print_comment(f"PASSED -- File {json_file_path}")
+                    print_info(f"{test_name:<{TEST_NAME_WIDTH}} | {version:3} |  P   |      | {master_version}")
                 else:
                     fail_count += 1
                     print_debug(f"Fail count increased to {fail_count}")
-                    if verbose > 0:
-                        print_comment(f"{bg.WHITE}{Fore.RED}FAILED -- File {json_file_path}{Fore.RESET}{bg.RESET}")
-                        report_failed_steps(json_file_path, failed_steps)                        
-                    else:
-                        print_info(f"{bg.WHITE}{Fore.RED}{test_name:<{TEST_NAME_WIDTH}} | {version:3} |      |  F   | {master_version}   {Fore.RESET}{bg.RESET}")
+                    print_comment(f"{bg.WHITE}{Fore.RED}FAILED -- File {json_file_path}{Fore.RESET}{bg.RESET}")
+                    report_failed_steps(json_file_path, failed_steps)                        
+                    print_info(f"{bg.WHITE}{Fore.RED}{test_name:<{TEST_NAME_WIDTH}} | {version:3} |      |  F   | {master_version}   {Fore.RESET}{bg.RESET}")
             
             except Exception as e:
                 print_error(f"Error processing file {json_file_path}: {str(e)}")

@@ -24,7 +24,7 @@
 #include "utils.h"
 #include "main.h"
 
-int debugFlag = 1;
+int debugFlag = 0;
 
 //-----------------------------------------------------
 // processSerialCommand()
@@ -32,9 +32,8 @@ int debugFlag = 1;
 // ******************************************************************
 void processSerialCommand(char* command, char* data) {
 	char buffer[CMD_BUFFER_SIZE];
-	char buff[3000] = {0};
+	char buff[10000] = {0};
 	char temp[12];
-
 
 	if(command[0] == 0x0a || command[0] == 0x0d){
 		return;
@@ -49,7 +48,7 @@ void processSerialCommand(char* command, char* data) {
 
   if (strncmp(command, "VERS", 4) == 0) {
 	  //if(DEBUG_CMD)
-	  sendDebug("Version", VERS_STRING);
+	  sendReply("Version", VERS_STRING);
   }
 
   // ******************************************************
@@ -273,7 +272,6 @@ void processSerialCommand(char* command, char* data) {
   }
   else if (strncmp(command, "COM3", 4) == 0) {
     if (data) {
-//@@@@      UART_Transmit(&huart5, data);
       sendDebug("Sent to COM3", data);
     }
   }
@@ -376,10 +374,10 @@ void processSerialCommand(char* command, char* data) {
 		serialCFG = num;
 		setSerialCFG();
         itoa(num, temp, 10);
-	    sendDebug("Serial Cfg", temp);
+	    sendDebug("Serial cfg", temp);
 	} else {
         itoa(serialCFG, temp, 10);
-		sendDebug("Serial Cfg", temp);
+		sendDebug("Serial cfg", temp);
 	}
   }
 
@@ -392,7 +390,7 @@ void processSerialCommand(char* command, char* data) {
   }
   else if (strncmp(command, "STATUS", 6) == 0) {
     printSystemStatus(buff);
-    sendDebug("Status", buff);
+    sendReply("Status", buff);
   }
 
 
@@ -461,8 +459,6 @@ void printHelp(char *buffer) {
     strcat(buffer, "STATUS Show system status\n");
     strcat(buffer, "HELP Show this message\n");
 }
-
-
 
 //-----------------------------------------------------
 // printSystemStatus()

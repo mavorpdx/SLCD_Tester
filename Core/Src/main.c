@@ -67,16 +67,11 @@ HAL_Init();
 	  printf("MAIN\n\r");
   }
 
-
-
   if (huart1.Instance->CR1 & USART_CR1_UE) {
       printf("USART1 is enabled\n");
   } else {
       printf("USART1 is disabled\n");
   }
-
-
-
 
 
   ADC_Init();
@@ -95,7 +90,7 @@ HAL_Init();
 	  handleSerialCommunications();
 	  now_millis = millis();
 	  delay(10);
-	  if (now_millis - previous_millis >= 100) {
+	  if (now_millis - previous_millis >= 500) {
 		//printf("!");
 	    previous_millis = now_millis;
  	    updateLEDStatus();

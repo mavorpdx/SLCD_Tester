@@ -143,6 +143,7 @@ Debug Interface
 TMS (PA13) - JTAG Test Mode Select
 TCK (PA14) - JTAG Test Clock
 
+
 ********************************************
  SERIAL CONFIGURATION FOR USART3 AND USART4
 ********************************************

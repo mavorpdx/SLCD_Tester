@@ -86,28 +86,27 @@ void ChangeBaudRate(UART_HandleTypeDef *huart, uint32_t baudRate) {
 
 // Functions to change the baud rate for each UART
 void SetBaudRate_COM0(uint32_t baudRate) {
-	if(DEBUG_UART) printf("Baud change COM0\n");
+	sendReply("CONFIG", "Baud change COM0");
 	MX_USART1_UART_Init();
 }
 
 void SetBaudRate_COM1(uint32_t baudRate) {
-	if(DEBUG_UART) printf("Baud change COM1\n");
+	sendReply("CONFIG", "Baud change COM1");
 	MX_USART3_UART_Init();
 }
 
 void SetBaudRate_COM485(uint32_t baudRate) {
-	if(DEBUG_UART) printf("Baud change COM485\n");
+	sendReply("CONFIG", "Baud change COM485");
 	MX_USART4_UART_Init();
 }
 
 void SetBaudRate_COM2(uint32_t baudRate) {
-	if(DEBUG_UART) printf("Baud change COM2\n");
+	sendReply("CONFIG", "Baud change COM2");
 	MX_USART5_UART_Init();
 }
 
 void SetBaudRate_COM3(uint32_t baudRate) {
-	if(DEBUG_UART) printf("Baud change COM3\n");
-//	MX_USART5_UART_Init();
+	sendReply("CONFIG", "Baud change COM3");
 }
 
 
